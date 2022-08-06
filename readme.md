@@ -60,66 +60,55 @@ model, a panic feels right. When a model isn't found; returning `nil` feels accu
 package main
 
 import (
-	"fmt"
-	"github.com/jaenster/promise"
-	"time"
+  "fmt"
+  "github.com/jaenster/promise"
+  "time"
 )
 
 type Model struct {
-	Id uint64
-	X  uint32
-	Y  uint32
+  Id uint64
+  X  uint32
+  Y  uint32
 }
 
-func getModelFromDatabase(id uint32) Promise[*Model] {
-	return promise.New(func() *Model {
+func getModelFromDatabase(id uint64) *promise.Promise[*Model] {
+  return promise.New(func() *Model {
 
-		// ... Some code that suppose to get it
-		// Blocking code is perfectly valid in go, unlike javascript
-		time.Sleep(50 * time.Millisecond)
+    // ... Some code that suppose to get it
+    // Blocking code is perfectly valid in go, unlike javascript
+    time.Sleep(50 * time.Millisecond)
 
-		// Mock id 2 not being found
-		if id == 2 {
-			return nil
-		}
+    // Mock id 2 not being found
+    if id == 2 {
+      return nil
+    }
 
-		// Return instead of resolve
-		model := Model{id, 0, 0}
-		return &model
-	})
+    // Return instead of resolve
+    model := Model{id, 0, 0}
+    return &model
+  })
 }
 
 func main() {
-	// Example #1
-	// Silly example, as go is fine with blocking code, this could be done without promises just fine
-    value := getModelFromDatabase(1).Await()
+  // Example #1
+  // Silly example, as go is fine with blocking code, this could be done without promises just fine
+  value := getModelFromDatabase(1).Await()
+  fmt.Sprintln(value)
 
-	
-	// Example #2
-	// This gets a bit more complex to write with multiple channels and query in native go
-	
-	// Start different queries for models
-	p := promise.All(getModelFromDatabase(1), getModelFromDatabase(2))
-	
-	// Await all results which returns the correctly sorted results as put in at All
-	results := p.Await()
+  // Example #2
+  // This gets a bit more complex to write with multiple channels and query in native go
 
-	one := results[0]
-	two := results[1]
+  // Start different queries for models
+  p := promise.All(getModelFromDatabase(1), getModelFromDatabase(2))
 
-	fmt.Sprintln(one)
-	fmt.Sprintln(two)
-	
-	// Example #3
-	// Typical javascript kind of way with Then
-	promise.All(getModelFromDatabase(1), getModelFromDatabase(2)).Then(func (v []*Model){
-      one := results[0]
-      two := results[1]
+  // Await all results which returns the correctly sorted results as put in at All
+  results := p.Await()
 
-      fmt.Sprintln(one)
-      fmt.Sprintln(two)
-    })
+  one := results[0]
+  two := results[1]
 
+  fmt.Sprintln(one)
+  fmt.Sprintln(two)
 }
 
 ```
